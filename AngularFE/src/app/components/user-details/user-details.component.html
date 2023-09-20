@@ -1,0 +1,12 @@
+
+<div class="user-details">
+  <h2>User Details</h2>
+  <div *ngIf="user">
+    <p><strong>ID:</strong> {{ user.id }}</p>
+    <p><strong>First Name:</strong> {{ user.firstName }}</p>
+    <p><strong>Last Name:</strong> {{ user.lastName }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <button (click)="editUser()" class="btn btn-warning">Edit</button>
+    <button (click)="goBackToList()" class="btn btn-primary">Back to List</button>
+  </div>
+</div>
