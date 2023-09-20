@@ -157,5 +157,4 @@ public class UserControllerTests : IDisposable
 
         Assert.Null(deletedUser); // The user should not exist after deletion
     }
-
 }

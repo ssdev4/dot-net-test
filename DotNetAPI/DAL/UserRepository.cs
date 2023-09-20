@@ -24,11 +24,11 @@ namespace DotNetAPI.DAL
 
             if (ascending)
             {
-                query = query.OrderBy(u => u.LastName);
+                query = query.OrderBy(u => u.LastName).ThenBy(u => u.FirstName);
             }
             else
             {
-                query = query.OrderByDescending(u => u.LastName);
+                query = query.OrderByDescending(u => u.LastName).ThenByDescending(u => u.FirstName);
             }
 
             return await query.ToListAsync();

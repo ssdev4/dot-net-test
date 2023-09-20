@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using DotNetAPI.DAL;
 using DotNetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -20,69 +22,104 @@ namespace DotNetAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers([FromQuery] string lastName = null, [FromQuery] bool ascending = true)
         {
-            var users = await _unitOfWork.UserRepository.GetAllAsync(lastName, ascending);
-            return Ok(users);
+            try
+            {
+                var users = await _unitOfWork.UserRepository.GetAllAsync(lastName, ascending);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while fetching users.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while fetching the user.");
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
-            await _unitOfWork.UserRepository.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            try
+            {
+                await _unitOfWork.UserRepository.AddAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while creating the user.");
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, User user)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            var existingUser = await _unitOfWork.UserRepository.GetByIdAsync(id);
-
-            if (existingUser == null)
-            {
-                return NotFound();
-            }
-
-            // Update the properties of existingUser with the values from the input 'user'
-            existingUser.FirstName = user.FirstName;
-            existingUser.LastName = user.LastName;
-            existingUser.Email = user.Email;
-
-            await _unitOfWork.UserRepository.UpdateAsync(existingUser);
-
             try
             {
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Conflict(); // Handle concurrency conflict as needed
-            }
+                if (id != user.Id)
+                {
+                    return BadRequest();
+                }
 
-            return NoContent();
+                var existingUser = await _unitOfWork.UserRepository.GetByIdAsync(id);
+
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.Email = user.Email;
+
+                await _unitOfWork.UserRepository.UpdateAsync(existingUser);
+
+                try
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return Conflict();
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the user.");
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            await _unitOfWork.UserRepository.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
-            return NoContent();
+            try
+            {
+                await _unitOfWork.UserRepository.DeleteAsync(id);
+                await _unitOfWork.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while deleting the user.");
+            }
         }
     }
 }
+
